@@ -10,9 +10,9 @@
 
 Please evaluate your system on the following questions:
 
-**NOTE**
-    - System prompt given: **You are a helpful assistant.**
-    - User promts: **See below**
+**NOTE**\
+    - System prompt given: **You are a helpful assistant.**\
+    - User prompts: **See below**
 
 1. Explain the concept of object-oriented programming in simple terms to a complete beginner. 
     - Aspect Tested: 
