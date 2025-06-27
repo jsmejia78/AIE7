@@ -1,5 +1,40 @@
 import os
 from typing import List
+import pymupdf
+
+
+class PdfFileLoader:
+    def __init__(self, path: str, encoding: str = "utf-8"):
+        self.documents = []
+        self.path = path
+
+    def load(self):
+        if os.path.isdir(self.path):
+            self.load_directory()
+        elif os.path.isfile(self.path) and self.path.endswith(".pdf"):
+            self.documents.append(self.load_file(self.path))
+        else:
+            raise ValueError(
+                "Provided path is neither a valid directory nor a .pdf file."
+            )
+
+    def load_file(self, file_path: str):
+        doc = pymupdf.open(file_path)
+        full_text = ""
+        for page in doc:
+            full_text += page.get_text()
+        return full_text
+
+    def load_directory(self):
+        for root, _, files in os.walk(self.path):
+            for file in files:
+                if file.endswith(".pdf"):
+                    self.documents.append(self.load_file(os.path.join(root, file)))
+
+    def load_documents(self):
+        self.load()
+        return self.documents
+
 
 
 class TextFileLoader:
@@ -63,15 +98,32 @@ class CharacterTextSplitter:
 
 
 if __name__ == "__main__":
-    loader = TextFileLoader("data/KingLear.txt")
-    loader.load()
-    splitter = CharacterTextSplitter()
-    chunks = splitter.split_texts(loader.documents)
-    print(len(chunks))
-    print(chunks[0])
-    print("--------")
-    print(chunks[1])
-    print("--------")
-    print(chunks[-2])
-    print("--------")
-    print(chunks[-1])
+
+    type_doc = "pdf"
+
+    if type_doc == "pdf":
+        loader = PdfFileLoader("data/US_economy.pdf")
+        loader.load()
+        splitter = CharacterTextSplitter()
+        chunks = splitter.split_texts(loader.documents)
+        print(len(chunks))
+        print(chunks[0])
+        print("--------")
+        print(chunks[1])
+        print("--------")
+        print(chunks[-2])
+        print("--------")
+        print(chunks[-1])
+    else:
+        loader = TextFileLoader("data/KingLear.txt")
+        loader.load()
+        splitter = CharacterTextSplitter()
+        chunks = splitter.split_texts(loader.documents)
+        print(len(chunks))
+        print(chunks[0])
+        print("--------")
+        print(chunks[1])
+        print("--------")
+        print(chunks[-2])
+        print("--------")
+        print(chunks[-1])
