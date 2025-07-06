@@ -1,0 +1,14 @@
+{
+    "python.defaultInterpreterPath": "./.venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.analysis.typeCheckingMode": "basic",
+    "jupyter.kernels.filter": [
+        {
+            "path": "./.venv/bin/python",
+            "type": "pythonEnvironment"
+        }
+    ]
+} 
