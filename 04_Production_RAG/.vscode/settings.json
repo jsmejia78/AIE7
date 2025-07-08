@@ -5,10 +5,7 @@
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
     "python.analysis.typeCheckingMode": "basic",
-    "jupyter.kernels.filter": [
-        {
-            "path": "./.venv/bin/python",
-            "type": "pythonEnvironment"
-        }
+    "jupyter.kernels.excludePythonEnvironments": [
+        "./.venv/bin/python"
     ]
 } 
