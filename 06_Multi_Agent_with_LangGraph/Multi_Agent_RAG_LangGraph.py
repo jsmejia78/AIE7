@@ -8,7 +8,9 @@ import getpass
 os.environ["OPENAI_API_KEY"] = getpass.getpass("OpenAI API Key:")
 os.environ["TAVILY_API_KEY"] = getpass.getpass("TAVILY_API_KEY")
 
-# Task 1: Simple LangGraph RAG
+#====================================================================
+# Task 1: Simple LangGraph RAG to be used as a tool for the agents
+#====================================================================
 
 # Data Collection and Processing
 from langchain_community.document_loaders import DirectoryLoader
@@ -106,7 +108,9 @@ print("Testing RAG Graph:")
 result = rag_graph.invoke({"question" : "What is the maximum loan amount?"}) # type: ignore
 print(result)
 
+#====================================================================
 # Task 2: Helper Functions for Agent Graphs
+#====================================================================
 
 # Import Wall
 from typing import Any, Callable, List, Optional, TypedDict, Union
@@ -189,11 +193,14 @@ def create_team_supervisor(llm: ChatOpenAI, system_prompt, members) -> str:
         | JsonOutputFunctionsParser()
     ) # type: ignore
 
+#====================================================================
 # Task 3: Research Team - A LangGraph for Researching Loan Policy
+#====================================================================
 
 # Tool Creation
 from langchain_community.tools.tavily_search import TavilySearchResults
 
+# Tavily Search Tool
 tavily_tool = TavilySearchResults(max_results=5)
 
 # Custom RAG tool
@@ -295,7 +302,9 @@ for s in research_chain.stream(
         print(s)
         print("---")
 
+#====================================================================
 # Task 4: Document Writing Team
+#====================================================================
 
 # Previous Complaint Data
 from langchain_community.document_loaders import CSVLoader
