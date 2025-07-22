@@ -18,4 +18,5 @@ dependencies = [
     "jupyter>=1.1.1",
     "rapidfuzz>=3.0.0",
     "matplotlib>=3.10.3",
+    "nltk>=3.9.1",
 ]
