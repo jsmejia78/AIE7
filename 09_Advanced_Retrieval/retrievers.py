@@ -9,7 +9,7 @@ from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.retrievers import ParentDocumentRetriever, EnsembleRetriever
 from langsmith import traceable
 
-def get_retrieval_chains_and_wrapers(retrievers_config, loan_complaint_data, rag_prompt, chat_model, MODE):
+def get_retrieval_chains_and_wrappers(retrievers_config, loan_complaint_data, rag_prompt, chat_model, MODE):
 
     vectorstore = retrievers_config["naive"]["vectorstore"]
     parent_document_vectorstore = retrievers_config["parent_document"]["vectorstore"]
@@ -144,13 +144,11 @@ def get_retrieval_chains_and_wrapers(retrievers_config, loan_complaint_data, rag
     def run_ensemble_retrieval_chain(question):
         return ensemble_retrieval_chain.invoke({"question": question})
 
-    wrapers = {"naive_retrieval_chain": run_naive_retrieval_chain,
+    wrappers = {"naive_retrieval_chain": run_naive_retrieval_chain,
               "bm25_retrieval_chain": run_bm25_retrieval_chain,
               "contextual_compression_retrieval_chain": run_contextual_compression_retrieval_chain,
               "multi_query_retrieval_chain": run_multi_query_retrieval_chain,
               "parent_document_retrieval_chain": run_parent_document_retrieval_chain,
               "ensemble_retrieval_chain": run_ensemble_retrieval_chain}
 
-    chains_and_wrappers = {"chains": chains, "wrapers": wrapers}
-
-    return chains_and_wrappers 
+    return chains, wrappers  
