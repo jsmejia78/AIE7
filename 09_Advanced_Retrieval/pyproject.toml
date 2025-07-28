@@ -18,4 +18,5 @@ dependencies = [
     "langchain-cohere==0.4.4",
     "matplotlib>=3.10.3",
     "seaborn>=0.13.2",
+    "rapidfuzz>=3.0.0",
 ]

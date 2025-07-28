@@ -140,7 +140,7 @@ def get_retrieval_chains_and_wrappers(retrievers_config, loan_complaint_data, ra
     def run_parent_document_retrieval_chain(question):
         return parent_document_retrieval_chain.invoke({"question": question})
 
-    @traceable(name=f"RAG naive_retrieval_chain - {MODE}")
+    @traceable(name=f"RAG ensemble_retrieval_chain - {MODE}")
     def run_ensemble_retrieval_chain(question):
         return ensemble_retrieval_chain.invoke({"question": question})
 
