@@ -10,11 +10,11 @@ from typing import List
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_community.tools.arxiv.tool import ArxivQueryRun
 from app.rag import retrieve_information
-
+from app.mcp_client import stock_info
 
 def get_tool_belt() -> List:
-    """Return the list of tools available to agents (Tavily, Arxiv, RAG)."""
+    """Return the list of tools available to agents (Tavily, Arxiv, RAG, MCP)."""
     tavily_tool = TavilySearchResults(max_results=5)
-    return [tavily_tool, ArxivQueryRun(), retrieve_information]
+    return [tavily_tool, ArxivQueryRun(), retrieve_information, stock_info]
 
 
