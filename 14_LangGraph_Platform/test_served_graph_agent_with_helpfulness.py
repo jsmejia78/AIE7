@@ -5,7 +5,7 @@ def main():
     client = get_sync_client(url="http://localhost:2024")
     for chunk in client.runs.stream(
         None,  # Threadless run
-        "simple_agent",  # Assistant id from langgraph.json (assistants)
+        "agent_with_helpfulness",  # Assistant id from langgraph.json (assistants)
         input={
             "messages": [
                 {

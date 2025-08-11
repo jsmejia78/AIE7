@@ -4,34 +4,28 @@ import json
 import asyncio
 from typing import Any, Dict
 from langchain_core.tools import tool
-from fastmcp import Client
+from langchain_mcp_adapters.client import MultiServerMCPClient
 
 
-@tool
-def stock_info(ticker: str) -> str:
-    """
-    Get stock information for a given ticker symbol using the MCP server.
+class MCPClient:
+    def __init__(self):
+
+        self.servers = {
+            "mcp-server": {
+                "command" : "uv",
+                "args" : ["--directory", "/home/jsmejia/the_ai_eng_bootcamp/code/AIE7/14_LangGraph_Platform/mcp/", "run", "server.py"],
+                "transport" : "stdio",
+            }
+        }
+        # MCP client
+        self.mcp_client = MultiServerMCPClient(self.servers)
+        # Get tools synchronously
+        self.tools = asyncio.run(self.mcp_client.get_tools())
+
+    def get_tools(self):
+        return self.tools
+
+MCP_client = MCPClient()
     
-    Args:
-        ticker: The stock ticker symbol (e.g., 'AAPL', 'MSFT')
-        
-    Returns:
-        A string containing stock information
-    """
-    try:
-        # Call the MCP server served by Cursor
-        result = asyncio.run(_call_mcp_stock_info(ticker))
-        return result
-    except Exception as e:
-        return json.dumps({"error": f"Failed to get stock info: {str(e)}"})
-
-
-async def _call_mcp_stock_info(ticker: str) -> str:
-    """Call the Cursor-served MCP server."""
-    try:
-        # Connect to the MCP server using the name from your Cursor configuration
-        async with Client("mcp-server") as client:  # <- Use the server name from your config
-            result = await client.call_tool("stock_info", {"ticker": ticker.upper()})
-            return json.dumps(result)
-    except Exception as e:
-        return json.dumps({"error": f"MCP call failed: {str(e)}"})
+    
+    

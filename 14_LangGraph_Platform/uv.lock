@@ -11,6 +11,7 @@ dependencies = [
     { name = "fastmcp" },
     { name = "langchain-community" },
     { name = "langchain-core" },
+    { name = "langchain-mcp-adapters" },
     { name = "langchain-openai" },
     { name = "langchain-text-splitters" },
     { name = "langgraph" },
@@ -31,6 +32,7 @@ requires-dist = [
     { name = "fastmcp", specifier = ">=2.11.2" },
     { name = "langchain-community", specifier = ">=0.3.8" },
     { name = "langchain-core", specifier = ">=0.3.14" },
+    { name = "langchain-mcp-adapters", specifier = ">=0.1.9" },
     { name = "langchain-openai", specifier = ">=0.2.8" },
     { name = "langchain-text-splitters", specifier = ">=0.3.2" },
     { name = "langgraph", specifier = ">=0.2.60" },
@@ -813,6 +815,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/a8/3d/21c2743e5741261d4b40656171400c1fab9a7b9278b48937184af7a7eff8/langchain_core-0.3.73.tar.gz", hash = "sha256:8de06dbfed5a2e39dbefb48c61f32b011a0ee50a77b51728cc151930789bbc17", size = 569516, upload-time = "2025-08-07T14:40:41.861Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b3/f6/f36b5ea5d32137337a3fff84c3d3d164735d2de552b7057d3cdfe25adafa/langchain_core-0.3.73-py3-none-any.whl", hash = "sha256:90c64e13d5a213b0642eab29831b011a3592e57f20f34cac8c0bf9a6e4f563bc", size = 443341, upload-time = "2025-08-07T14:40:38.897Z" },
+]
+
+[[package]]
+name = "langchain-mcp-adapters"
+version = "0.1.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "langchain-core" },
+    { name = "mcp" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b9/74/e36003a43136f9095a5f968c730fbfe894f94284ebe6d2b50bb17d41b8b5/langchain_mcp_adapters-0.1.9.tar.gz", hash = "sha256:0018cf7b5f7bc4c044e05ec20fcb9ebe345311c8d1060c61d411188001ab3aab", size = 22101, upload-time = "2025-07-09T15:56:14.455Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a4/eb/9e98822d3db22beff44449a8f61fca208d4f59d592a7ce67ce4c400b8f8f/langchain_mcp_adapters-0.1.9-py3-none-any.whl", hash = "sha256:fd131009c60c9e5a864f96576bbe757fc1809abd604891cb2e5d6e8aebd6975c", size = 15300, upload-time = "2025-07-09T15:56:13.316Z" },
 ]
 
 [[package]]
