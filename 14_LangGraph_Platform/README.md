@@ -53,10 +53,39 @@ Run the repository and complete the following:
 
 What is the purpose of the `chunk_overlap` parameter when using `RecursiveCharacterTextSplitter` to prepare documents for RAG, and what trade-offs arise as you increase or decrease its value?
 
+#### 🟢 Answer:  
+
+The chunk_overlap parameter controls how many characters from the end of one chunk are repeated at the start of the next chunk. Its purpose is to reduce context loss when splitting text, especially when splits occur mid-sentence or in the middle of a key idea. By overlapping content, you increase the chance that important context appears intact in at least one chunk, which improves retrieval accuracy in RAG applications.
+
+When you increase overlap:
+
+- Reduces the loss of key information.
+- Increases the size of the database, which in turn increases storage and indexing costs.
+- Increases the number of highly similar chunks, which can cause retrieval to return near-duplicate content instead of diverse, topic-relevant chunks—potentially resulting in poorer answers.
+
+
 #### ❓ Question:
 
 Your retriever is configured with `search_kwargs={"k": 5}`. How would adjusting `k` likely affect RAGAS metrics such as Context Precision and Context Recall in practice, and why?
 
+🟢 Answer:  
+
+Increasing k means retrieving more chunks per query.
+
+Effect on Context Recall:
+- Likely to increase, because you have a higher chance of retrieving at least one chunk containing the relevant information.
+
+Effect on Context Precision:
+- May decrease, because as k grows, you’re more likely to include irrelevant or weakly related chunks.
+
+Trade-off:
+While a higher k can improve recall, setting it too high may overwhelm the LLM with excessive context, some of which may be irrelevant, making it harder for the model to focus on the most important information. This can lead to lower precision and potentially worse answer quality.
+
 #### ❓ Question:
 
 Compare the `agent` and `agent_helpful` assistants defined in `langgraph.json`. Where does the helpfulness evaluator fit in the graph, and under what condition should execution route back to the agent vs. terminate?
+
+
+#### 🟢 Answer:  
+
+In the agent_helpful graph, we see that from the agent node we can go either to the tool node or to the helpfulness node (if there are no tool calls). In the helpfulness node, we check whether the answer to the given query is actually useful by passing this decision to an LLM. If the LLM decides it is helpful, the process ends. Otherwise, we return to the agent, which will most likely call additional tools to gather the proper context needed to answer the query.
