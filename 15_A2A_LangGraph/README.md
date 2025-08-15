@@ -87,9 +87,26 @@ Do this by creating a Simple Agent that can make API calls to the 🤖Agent Node
 
 What are the core components of an `AgentCard`?
 
+##### ✅ Answer:
+
+The components of an Agent Card include:  
+
+- Name : The name of the agent.  
+- Description : A brief summary of what the agent does.  
+- URL : The endpoint or location where the agent can be accessed.  
+- Version : The version of the agent implementation.  
+- default_input_modes : The default communication formats (MIME types) the agent accepts as input.  
+- default_output_modes : The default communication formats (MIME types) the agent produces as output.  
+- Capabilities : The features the agent supports (e.g., streaming, push notifications).  
+- Skills : The specific actions or tools the agent can perform.  
+
 ### ❓ Question #2:
 
 Why is A2A (and other such protocols) important in your own words?
+
+##### ✅ Answer:
+
+The A2A protocol allows agents to interact with and use other agents in a "standardized" way, enabling them to work/collaborate efficiently to achieve a particular goal or task.
 
 ### 🚧 Advanced Build:
 
