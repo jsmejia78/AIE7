@@ -21,4 +21,6 @@ dependencies = [
     "arxiv>=2.1.0",
     "cryptography==44.0.3",
     "guardrails-ai==0.5.14",
+    "dotenv>=0.9.9",
+    "python-dotenv>=1.1.1",
 ]
