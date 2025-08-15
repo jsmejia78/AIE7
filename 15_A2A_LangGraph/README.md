@@ -139,6 +139,8 @@ This contains:
 
 - Short demo showing running Client
 
+    ✅ run: uv run python cleint/client_agent.py
+
 # Share 🚀
 
 - Explain the A2A protocol implementation

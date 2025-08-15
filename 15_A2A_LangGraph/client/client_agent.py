@@ -55,7 +55,7 @@ class ClientAgentForA2AServer:
     def __init__(
         self,
         server_url: str = "http://localhost:10000",
-        openai_model: str = None,
+        openai_model: str = "gpt-4.1-mini",
         temperature: float = 0.0,
     ):
 
@@ -209,8 +209,22 @@ class ClientAgentForA2AServer:
             response = await client.send_message(request)
             #print(response.model_dump(mode='json', exclude_none=True))
 
-            return {"messages": [("ai", response.content)],
-                "server_response": response.content
+            # Extract content from the response structure
+            response_content = ""
+            if hasattr(response, 'root') and hasattr(response.root, 'result'):
+                # Handle the structured response
+                result = response.root.result
+                if hasattr(result, 'content'):
+                    response_content = result.content
+                elif hasattr(result, 'message'):
+                    response_content = result.message
+                else:
+                    response_content = str(result)
+            else:
+                response_content = str(response)
+
+            return {"messages": [("ai", response_content)],
+                "server_response": response_content
             }
         except Exception as e:
             error_msg = f"Failed to reach server: {str(e)}"
@@ -233,17 +247,25 @@ class ClientAgentForA2AServer:
                 "previous_server_responses": state.get("previous_server_responses", []) + [state.get("server_response", "")]
             }
 
-    def _should_continue(self, state: AgentState) -> AgentState:
+    def _should_continue(self, state: AgentState) -> str:
         """ Check if the agent should continue. """
         last_message = state["messages"][-1]
-        if last_message.content == "CONTINUE":
-            self.previous_answers.append(last_message.content)
+        # Handle both tuple format (role, content) and message objects
+        if isinstance(last_message, tuple):
+            content = last_message[1]
+        elif hasattr(last_message, 'content'):
+            content = last_message.content
+        else:
+            content = str(last_message)
+            
+        if content == "CONTINUE":
+            self.previous_answers.append(content)
             return "reach_agent_server"
-        elif last_message.content == "FINISH":
+        elif content == "FINISH":
             return END
         else:
             # If the last message is not "CONTINUE" or "FINISH", then continue to retry server call and retry helpful check
-            self.previous_answers.append(last_message.content)
+            self.previous_answers.append(content)
             return "reach_agent_server"
 
     def _init_graph(self):
@@ -256,8 +278,8 @@ class ClientAgentForA2AServer:
             "helpful_answer_check",
             self._should_continue,
             {
-                "CONTINUE": "reach_agent_server",
-                "FINISH": END,
+                "reach_agent_server": "reach_agent_server",
+                END: END,
             },
         )
         graph.set_entry_point("reach_agent_server")
@@ -316,7 +338,7 @@ if __name__ == "__main__":
             
             while True:
                 # Get user input
-                user_input = input("How can I help you today?: ").strip()
+                user_input = input("\n\nCan I help you today? (Type 'quit' to exit): ").strip()
                 
                 # Check if user wants to quit
                 if user_input.lower() in ['quit', 'exit', 'q']:
@@ -331,7 +353,17 @@ if __name__ == "__main__":
                     # Get response from agent
                     print("Agent is thinking...")
                     response = await agent.chat(user_input)
-                    print(f"\nAgent: {response}")
+                    
+                    # Extract clean text from response if it's still complex
+                    clean_response = response
+                    if "artifacts=" in str(response):
+                        # Try to extract just the text content
+                        import re
+                        text_match = re.search(r"text='([^']*)'", str(response))
+                        if text_match:
+                            clean_response = text_match.group(1)
+                    
+                    print(f"\n\nAgent: {clean_response}\n\n")
                 except Exception as e:
                     print(f"\nError: {e}")
                     print("Please try again.")
