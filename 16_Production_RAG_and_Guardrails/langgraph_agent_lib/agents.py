@@ -14,7 +14,7 @@ from langchain_core.tools import tool
 from typing_extensions import TypedDict, Annotated
 from langgraph.graph.message import add_messages
 from langchain_core.prompts import PromptTemplate
-
+from guardrails import Guard
 from .models import get_openai_model
 from .rag import ProductionRAGChain
 
@@ -23,6 +23,9 @@ class AgentState(TypedDict):
     """State schema for agent graphs."""
     messages: Annotated[List[BaseMessage], add_messages]
 
+class AgentStateWithGuardrails(TypedDict):
+    """State schema for agent graphs."""
+    messages: Annotated[List[BaseMessage], add_messages]
 
 def create_rag_tool(rag_chain: ProductionRAGChain):
     """Create a RAG tool from a ProductionRAGChain."""
@@ -219,6 +222,73 @@ def create_langgraph_agent_with_helpfulness_check(
         helpfulness_decision,
         {"continue": "agent", "end": END, END: END},
     )
+    
+    return graph.compile()
+
+
+def create_langgraph_agent_with_guardrails(
+    model_name: str = "gpt-4",
+    temperature: float = 0.1,
+    tools: Optional[List] = None,
+    rag_chain: Optional[ProductionRAGChain] = None,
+    guardrails: Optional[Dict[str, Guard]] = None
+):
+    """Create a simple LangGraph agent.
+    
+    Args:
+        model_name: OpenAI model name
+        temperature: Model temperature
+        tools: List of tools to bind to the model
+        rag_chain: Optional RAG chain to include as a tool
+        guardrails: Optional dictionary of guardrails to apply to the agent
+    Returns:
+        Compiled LangGraph agent
+    """
+    if tools is None:
+        tools = get_default_tools(rag_chain)
+    
+    # Get model and bind tools
+    model = get_openai_model(model_name=model_name, temperature=temperature)
+    model_with_tools = model.bind_tools(tools)
+    
+    def call_model(state: AgentStateWithGuardrails) -> Dict[str, Any]:
+        """Invoke the model with messages."""
+        messages = state["messages"]
+        response = model_with_tools.invoke(messages)
+        return {"messages": [response]}
+    
+    def should_continue(state: AgentStateWithGuardrails):
+        """Route to tools if the last message has tool calls."""
+        last_message = state["messages"][-1]
+        if getattr(last_message, "tool_calls", None):
+            return "action"
+        return END
+    
+    def input_guards(state: AgentStateWithGuardrails) -> Dict[str, Any]:
+        """Invoke the model with messages."""
+
+        response = guardrails["input_guards"].validate(state["messages"][-1])
+
+
+        return {"messages": [response]}
+
+    def output_guards(state: AgentStateWithGuardrails) -> Dict[str, Any]:
+        """Invoke the model with messages."""
+        messages = state["messages"]
+        response = model_with_tools.invoke(messages)
+        return {"messages": [response]}
+
+    # Build graph
+    graph = StateGraph(AgentStateWithGuardrails)
+    tool_node = ToolNode(tools)
+    
+    graph.add_node("input_guards", input_guards)
+    graph.add_node("agent", call_model)
+    graph.add_node("action", tool_node)
+    graph.add_node("output_guards", output_guards)
+    graph.set_entry_point("agent")
+    graph.add_conditional_edges("agent", should_continue, {"action": "action", END: END})
+    graph.add_edge("action", "agent")
     
     return graph.compile()
 
