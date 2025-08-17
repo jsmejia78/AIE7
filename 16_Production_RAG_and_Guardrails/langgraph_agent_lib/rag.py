@@ -148,3 +148,7 @@ Context:
         """Get the vector store for external use."""
         return self.vectorstore
 
+    def get_chain_llm_and_prompt(self):
+        """Get the chain elements for external use."""
+        return self.llm, self.chat_prompt
+
