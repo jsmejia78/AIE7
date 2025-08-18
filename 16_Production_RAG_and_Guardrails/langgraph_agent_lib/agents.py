@@ -237,9 +237,9 @@ def create_langgraph_agent_with_helpfulness_check(
 class AgentStateWithGuardrails(TypedDict):
     """State schema for agent graphs."""
     messages: Annotated[List[BaseMessage], add_messages]
-    query: str
     query_sanitized: str
-    guardrail_status: str # blocked, redacted, or allowed   
+    input_guardrail_status: str # blocked, redacted, or allowed   
+    output_guardrail_status: str # blocked, redacted, or allowed   
 
 
 def create_langgraph_agent_with_guardrails(
@@ -288,11 +288,10 @@ def create_langgraph_agent_with_guardrails(
 
         guardrail_results = run_all_guardrails_parallel(guardrails_input, user_input)
         updates = {}
-        updates["query_sanitized"] = user_input
         for guardrail_name, guardrail_result in guardrail_results.items():
             
             if guardrail_result["action"] == "blocked":
-                updates = {"guardrail_status": "blocked"}
+                updates = {"input_guardrail_status": "blocked"}
                 updates["messages"] = [
                     SystemMessage(content=f"User input blocked for {guardrail_name}. Please try again."),
                 ]
@@ -303,9 +302,10 @@ def create_langgraph_agent_with_guardrails(
                     SystemMessage(content=f"Note: user input sanitized for {guardrail_name}."),
                     HumanMessage(content=guardrail_result["sanitized_text"] )
                 ]
-                updates = {"guardrail_status": "redacted",
-                    "query_sanitized": guardrail_result["sanitized_text"]}
+                updates = {"input_guardrail_status": "redacted"}
 
+        # If we get here, all guardrails passed
+        updates["input_guardrail_status"] = "passed"
         return updates
 
     def output_guards(state: AgentStateWithGuardrails) -> Dict[str, Any]:
@@ -319,9 +319,9 @@ def create_langgraph_agent_with_guardrails(
         for guardrail_name, guardrail_result in guardrail_results.items():
             
             if guardrail_result["action"] == "blocked":
-                updates = {"guardrail_status": "blocked"}
+                updates = {"output_guardrail_status": "blocked"}
                 updates["messages"] = [
-                    SystemMessage(content=f"LLM output blocked for {guardrail_name}. Please try again with an updated query."),
+                    SystemMessage(content=f"LLM output blocked for {guardrail_name}. LLM lease try again with an updated query."),
                 ]
                 return updates
 
@@ -330,19 +330,35 @@ def create_langgraph_agent_with_guardrails(
                     SystemMessage(content=f"Note: LLM output sanitized for {guardrail_name}."),
                     AIMessage(content=guardrail_result["sanitized_text"] )
                 ]
-                updates = {"guardrail_status": "redacted"}
+                updates = {"output_guardrail_status": "redacted"}
 
+        # If we get here, all guardrails passed
+        updates["output_guardrail_status"] = "passed"
         return updates
 
     def should_continue_after_input_guards(state: AgentStateWithGuardrails):
         """Guardrails for the input messages."""
-        guardrail_status = state["guardrail_status"]
+        guardrail_status = state["input_guardrail_status"]
         if guardrail_status == "blocked":
             return END
         elif guardrail_status == "redacted":
             return "agent"
+        elif guardrail_status == "passed":
+            return "agent"
         else:
-            return "action"
+            return "agent"
+
+    def should_continue_after_output_guards(state: AgentStateWithGuardrails):
+        """Guardrails for the input messages."""
+        guardrail_status = state["output_guardrail_status"]
+        if guardrail_status == "blocked":
+            return "agent"
+        elif guardrail_status == "redacted":
+            return END
+        elif guardrail_status == "passed":
+            return END
+        else:
+            return END
 
     # Build graph
     graph = StateGraph(AgentStateWithGuardrails)
@@ -353,10 +369,10 @@ def create_langgraph_agent_with_guardrails(
     graph.add_node("action", tool_node)
     graph.add_node("output_guards", output_guards)
     graph.set_entry_point("input_guards")
-    graph.add_conditional_edges("agent", should_continue, {"action": "action", "output_guards": output_guards})
+    graph.add_conditional_edges("agent", should_continue, {"action": "action", "output_guards": "output_guards"})
     graph.add_conditional_edges("input_guards", should_continue_after_input_guards, {"agent": "agent", END: END})
+    graph.add_conditional_edges("output_guards", should_continue_after_output_guards, {"agent": "agent", END: END})
     graph.add_edge("action", "agent")
-    graph.add_edge("output_guards", END)
-    
+       
     return graph.compile()
 
