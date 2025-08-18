@@ -281,13 +281,15 @@ def create_langgraph_agent_with_guardrails(
             return "action"
         return "output_guards"
     
-    def input_guards(state: AgentStateWithGuardrails) -> Dict[str, Any]:
+    async def input_guards(state: AgentStateWithGuardrails) -> Dict[str, Any]:
         """Guardrails for the input messages."""
 
         user_input = state["messages"][-1].content
 
-        guardrail_results = run_all_guardrails_parallel(guardrails_input, user_input)
+        guardrail_results = await run_all_guardrails_parallel(guardrails_input, user_input)
         updates = {}
+        updates["input_guardrail_status"] = "passed"
+
         for guardrail_name, guardrail_result in guardrail_results.items():
             
             if guardrail_result["action"] == "blocked":
@@ -302,18 +304,16 @@ def create_langgraph_agent_with_guardrails(
                     SystemMessage(content=f"Note: user input sanitized for {guardrail_name}."),
                     HumanMessage(content=guardrail_result["sanitized_text"] )
                 ]
-                updates = {"input_guardrail_status": "redacted"}
+                updates["input_guardrail_status"]= "redacted"
 
-        # If we get here, all guardrails passed
-        updates["input_guardrail_status"] = "passed"
         return updates
 
-    def output_guards(state: AgentStateWithGuardrails) -> Dict[str, Any]:
+    async def output_guards(state: AgentStateWithGuardrails) -> Dict[str, Any]:
         """Guardrails for the output messages."""
 
         agent_response = state["messages"][-1].content
 
-        guardrail_results = run_all_guardrails_parallel(guardrails_output, agent_response)
+        guardrail_results = await run_all_guardrails_parallel(guardrails_output, agent_response)
         updates = {}
 
         for guardrail_name, guardrail_result in guardrail_results.items():
