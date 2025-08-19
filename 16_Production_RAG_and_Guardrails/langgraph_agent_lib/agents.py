@@ -319,8 +319,7 @@ def create_langgraph_agent_with_guardrails(
 
         for guardrail_name, guardrail_result in guardrail_results.items():
 
-            if guardrail_name == "factuality_guard":
-                print(f"Guardrail: {guardrail_name} - Result: {guardrail_result}\n\n")
+            print(f"Guardrail: {guardrail_name} - Result: {guardrail_result}\n\n")
 
             if guardrail_result["action"] == "blocked":
                 print(f"Guardrail: {guardrail_name} - Result: blocked")
