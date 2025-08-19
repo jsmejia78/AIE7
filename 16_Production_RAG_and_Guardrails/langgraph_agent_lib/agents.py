@@ -315,13 +315,18 @@ def create_langgraph_agent_with_guardrails(
 
         guardrail_results = await run_all_guardrails_parallel(guardrails_output, agent_response)
         updates = {}
+        updates["output_guardrail_status"] = "passed"
 
         for guardrail_name, guardrail_result in guardrail_results.items():
-            
+
+            if guardrail_name == "factuality_guard":
+                print(f"Guardrail: {guardrail_name} - Result: {guardrail_result}\n\n")
+
             if guardrail_result["action"] == "blocked":
+                print(f"Guardrail: {guardrail_name} - Result: blocked")
                 updates = {"output_guardrail_status": "blocked"}
                 updates["messages"] = [
-                    SystemMessage(content=f"LLM output blocked for {guardrail_name}. LLM lease try again with an updated query."),
+                    SystemMessage(content=f"LLM output blocked for {guardrail_name}. LLM please try again with an updated query."),
                 ]
                 return updates
 
@@ -330,10 +335,9 @@ def create_langgraph_agent_with_guardrails(
                     SystemMessage(content=f"Note: LLM output sanitized for {guardrail_name}."),
                     AIMessage(content=guardrail_result["sanitized_text"] )
                 ]
-                updates = {"output_guardrail_status": "redacted"}
+                updates["output_guardrail_status"] = "redacted"
 
         # If we get here, all guardrails passed
-        updates["output_guardrail_status"] = "passed"
         return updates
 
     def should_continue_after_input_guards(state: AgentStateWithGuardrails):
